@@ -1,176 +1,292 @@
 import os
 from pathlib import Path
-from os import system
 
+# Ruta base donde se encuentran las recetas
 mi_ruta = Path("C:/Users/jimym/Documents/Udemy/Recetas")
 
-
+# Función para contar la cantidad de recetas en la ruta
 def contar_recetas(ruta):
     contador = 0
     for txt in Path(ruta).glob("**/*.txt"):
         contador += 1
-
     return contador
 
+# Función para mostrar el menú principal
+def menu_principal():
+    while True:
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print('*' * 50)
+        print('*' * 5 + " Bienvenido al administrador de recetas " + '*' * 5)
+        print('*' * 50)
+        print('\n')
+        print(f"Las recetas se encuentran en {mi_ruta}")
+        print(f"Total recetas: {contar_recetas(mi_ruta)}")
 
-def inicio():
-    system('cls')
-    print('*' * 50)
-    print('*' * 5 + " Bienvenido al administrador de recetas " + '*' * 5)
-    print('*' * 50)
-    print('\n')
-    print(f"Las recetas se encuentran en {mi_ruta}")
-    print(f"Total recetas: {contar_recetas(mi_ruta)}")
-
-    eleccion_menu = 'x'
-    while not eleccion_menu.isnumeric() or int(eleccion_menu) not in range(1,7):
-        print("Elige una opcion:")
+        print("Elige una opción:")
         print('''
         [1] - Leer receta
         [2] - Crear receta nueva
-        [3] - Crear categoria nueva
+        [3] - Crear categoría nueva
         [4] - Eliminar receta
-        [5] - Eliminar categoria
-        [6] - Salir del programa''')
-        eleccion_menu = input()
+        [5] - Eliminar categoría
+        [6] - Salir del programa
+        [7] - Volver al inicio''')
 
-    return int(eleccion_menu)
+        eleccion_menu = input(">> ")
 
+        if eleccion_menu == "1":
+            leer_receta()
+            volver_inicio()
+        elif eleccion_menu == "2":
+            crear_receta()
+            volver_inicio()
+        elif eleccion_menu == "3":
+            crear_categoria()
+            volver_inicio()
+        elif eleccion_menu == "4":
+            eliminar_receta()
+            volver_inicio()
+        elif eleccion_menu == "5":
+            eliminar_categoria()
+            volver_inicio()
+        elif eleccion_menu == "6":
+            break
+        elif eleccion_menu == "7":
+            continue
 
-def mostrar_categorias(ruta):
-    print("Categorias:")
-    ruta_categorias = Path(ruta)
-    lista_categorias = []
-    contador = 1
+# Función para mostrar la lista de categorías
+def mostrar_categorias():
+    print("Categorías:")
+    for carpeta in mi_ruta.iterdir():
+        if carpeta.is_dir():
+            print(carpeta.name)
 
-    for carpeta in ruta_categorias.iterdir():
-        carpeta_str = str(carpeta.name)
-        print(f"[{contador}] - {carpeta_str}")
-        lista_categorias.append(carpeta)
-        contador += 1
+# Función para elegir una categoría
+def elegir_categoria():
+    while True:
+        mostrar_categorias()
+        categoria = input("Elije una categoría: ")
+        ruta_categoria = mi_ruta / categoria
 
-    return lista_categorias
-
-
-def elegir_categoria(lista):
-    eleccion_correcta = 'x'
-
-    while not eleccion_correcta.isnumeric() or int(eleccion_correcta) not in range(1, len(lista) + 1):
-        eleccion_correcta = input("\nElije una categoria: ")
-
-    return lista[int(eleccion_correcta) - 1]
-
-
-def mostrar_recetas(ruta):
-    print("Recetas:")
-    ruta_recetas = Path(ruta)
-    lista_recetas = []
-    contador = 1
-
-    for receta in ruta_recetas.glob('*.txt'):
-        receta_str = str(receta.name)
-        print(f"[{contador}] - {receta_str}")
-        lista_recetas.append(receta)
-        contador += 1
-
-    return lista_recetas
-
-
-def elegir_recetas(lista):
-    eleccion_receta = 'x'
-
-    while not eleccion_receta.isnumeric() or int(eleccion_receta) not in range(1, len(lista) + 1):
-        eleccion_receta = input("\nElije una receta: ")
-
-    return lista[int(eleccion_receta) - 1]
-
-
-def leer_receta(receta):
-    print(Path.read_text(receta))
-
-
-def crear_receta(ruta):
-    existe = False
-
-    while not existe:
-        print("Escribe el nombre de tu receta: ")
-        nombre_receta = input() + '.txt'
-        print("Escribe tu nueva receta: ")
-        contenido_receta = input()
-        ruta_nueva = Path(ruta, nombre_receta)
-
-        if not os.path.exists(ruta_nueva):
-            Path.write_text(ruta_nueva, contenido_receta)
-            print(f"Tu receta {nombre_receta} ha sido creada")
-            existe = True
+        if ruta_categoria.is_dir():
+            return ruta_categoria
         else:
-            print("Lo siento, esa receta ya existe")
+            print("Categoría no válida. Inténtalo de nuevo.")
 
+# Función para mostrar la lista de recetas en una categoría
+def mostrar_recetas(ruta_categoria):
+    print("Recetas en la categoría:")
+    for receta in ruta_categoria.glob('*.txt'):
+        print(receta.stem)
 
-def crear_categoria(ruta):
-    existe = False
+# Función para elegir una receta
+def elegir_receta(ruta_categoria):
+    while True:
+        mostrar_recetas(ruta_categoria)
+        receta = input("Elije una receta: ")
+        ruta_receta = ruta_categoria / (receta + ".txt")
 
-    while not existe:
-        print("Escribe el nombre de la nueva categoria: ")
-        nombre_categoria = input()
-        ruta_nueva = Path(ruta, nombre_categoria)
-
-        if not os.path.exists(ruta_nueva):
-            Path.mkdir(ruta_nueva)
-            print(f"Tu nueva categoria {nombre_categoria} ha sido creada")
-            existe = True
+        if ruta_receta.is_file():
+            return ruta_receta
         else:
-            print("Lo siento, esa categoria ya existe")
+            print("Receta no válida. Inténtalo de nuevo.")
 
+# Función para leer el contenido de una receta
+def leer_receta():
+    ruta_categoria = elegir_categoria()
+    ruta_receta = elegir_receta(ruta_categoria)
 
-def eliminar_receta(receta):
-    Path(receta).unlink()
-    print(f"La receta {receta.name} ha sido eliminada")
+    with open(ruta_receta, 'r', encoding='utf-8') as file:
+        contenido = file.read()
+        print(contenido)
 
+# Función para crear una nueva receta
+def crear_receta():
+    ruta_categoria = elegir_categoria()
+    nombre_receta = input("Escribe el nombre de tu receta: ") + ".txt"
+    ruta_receta = ruta_categoria / nombre_receta
 
-def eliminar_categoria(categoria):
-    Path(categoria).rmdir()
-    print(F"La categoria {categoria.name} ha sido eliminada")
+    if ruta_receta.is_file():
+        print("La receta ya existe.")
+    else:
+        contenido_receta = input("Escribe tu nueva receta (presiona Ctrl+Z o Ctrl+D para finalizar):\n")
+        with open(ruta_receta, 'w', encoding='utf-8') as file:
+            file.write(contenido_receta)
+        print(f"Tu receta {nombre_receta} ha sido creada.")
 
+# Función para crear una nueva categoría
+def crear_categoria():
+    nombre_categoria = input("Escribe el nombre de la nueva categoría: ")
+    ruta_categoria = mi_ruta / nombre_categoria
 
+    if ruta_categoria.is_dir():
+        print("La categoría ya existe.")
+    else:
+        ruta_categoria.mkdir()
+        print(f"Tu nueva categoría {nombre_categoria} ha sido creada.")
+
+# Función para eliminar una receta
+def eliminar_receta():
+    ruta_categoria = elegir_categoria()
+    ruta_receta = elegir_receta(ruta_categoria)
+    ruta_receta.unlink()
+    print(f"La receta {ruta_receta.name} ha sido eliminada.")
+
+# Función para eliminar una categoría
+def eliminar_categoria():
+    ruta_categoria = elegir_categoria()
+    ruta_categoria.rmdir()
+    print(f"La categoría {ruta_categoria.name} ha sido eliminada.")
+
+# Función para volver al menú principal
 def volver_inicio():
-    eleccion_regresar = 'x'
+    input("Presiona Enter para volver al inicio...")
 
-    while eleccion_regresar.lower() != 'v':
-        eleccion_regresar = input("\nPresione V para volver al menu: ")
+if __name__ == "__main__":
+    menu_principal()
+import os
+from pathlib import Path
 
+# Ruta base donde se encuentran las recetas
+mi_ruta = Path("C:/Users/jimym/Documents/Udemy/Recetas")
 
-finalizar_programa = False
+# Función para contar la cantidad de recetas en la ruta
+def contar_recetas(ruta):
+    contador = 0
+    for txt in Path(ruta).glob("**/*.txt"):
+        contador += 1
+    return contador
 
-while not finalizar_programa:
-    menu = inicio()
+# Función para mostrar el menú principal
+def menu_principal():
+    while True:
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print('*' * 50)
+        print('*' * 5 + " Bienvenido al administrador de recetas " + '*' * 5)
+        print('*' * 50)
+        print('\n')
+        print(f"Las recetas se encuentran en {mi_ruta}")
+        print(f"Total recetas: {contar_recetas(mi_ruta)}")
 
-    if menu == 1:
-        mis_categorias = mostrar_categorias(mi_ruta)
-        mi_categoria = elegir_categoria(mis_categorias)
-        mis_recetas = mostrar_recetas(mi_categoria)
-        mi_receta = elegir_recetas(mis_recetas)
-        leer_receta(mi_receta)
-        volver_inicio()
-    elif menu == 2:
-        mis_categorias = mostrar_categorias(mi_ruta)
-        mi_categoria = elegir_categoria(mis_categorias)
-        crear_receta(mi_categoria)
-        volver_inicio()
-    elif menu == 3:
-        crear_categoria(mi_ruta)
-        volver_inicio()
-    elif menu == 4:
-        mis_categorias = mostrar_categorias(mi_ruta)
-        mi_categoria = elegir_categoria(mis_categorias)
-        mis_recetas = mostrar_recetas(mi_categoria)
-        mi_receta = elegir_recetas(mis_recetas)
-        eliminar_receta(mi_receta)
-        volver_inicio()
-    elif menu == 5:
-        mis_categorias = mostrar_categorias(mi_ruta)
-        mi_categoria = elegir_categoria(mis_categorias)
-        eliminar_categoria(mi_categoria)
-        volver_inicio()
-    elif menu == 6:
-        finalizar_programa = True
+        print("Elige una opción:")
+        print('''
+        [1] - Leer receta
+        [2] - Crear receta nueva
+        [3] - Crear categoría nueva
+        [4] - Eliminar receta
+        [5] - Eliminar categoría
+        [6] - Salir del programa
+        [7] - Volver al inicio''')
+
+        eleccion_menu = input(">> ")
+
+        if eleccion_menu == "1":
+            leer_receta()
+            volver_inicio()
+        elif eleccion_menu == "2":
+            crear_receta()
+            volver_inicio()
+        elif eleccion_menu == "3":
+            crear_categoria()
+            volver_inicio()
+        elif eleccion_menu == "4":
+            eliminar_receta()
+            volver_inicio()
+        elif eleccion_menu == "5":
+            eliminar_categoria()
+            volver_inicio()
+        elif eleccion_menu == "6":
+            break
+        elif eleccion_menu == "7":
+            continue
+
+# Función para mostrar la lista de categorías
+def mostrar_categorias():
+    print("Categorías:")
+    for carpeta in mi_ruta.iterdir():
+        if carpeta.is_dir():
+            print(carpeta.name)
+
+# Función para elegir una categoría
+def elegir_categoria():
+    while True:
+        mostrar_categorias()
+        categoria = input("Elije una categoría: ")
+        ruta_categoria = mi_ruta / categoria
+
+        if ruta_categoria.is_dir():
+            return ruta_categoria
+        else:
+            print("Categoría no válida. Inténtalo de nuevo.")
+
+# Función para mostrar la lista de recetas en una categoría
+def mostrar_recetas(ruta_categoria):
+    print("Recetas en la categoría:")
+    for receta in ruta_categoria.glob('*.txt'):
+        print(receta.stem)
+
+# Función para elegir una receta
+def elegir_receta(ruta_categoria):
+    while True:
+        mostrar_recetas(ruta_categoria)
+        receta = input("Elije una receta: ")
+        ruta_receta = ruta_categoria / (receta + ".txt")
+
+        if ruta_receta.is_file():
+            return ruta_receta
+        else:
+            print("Receta no válida. Inténtalo de nuevo.")
+
+# Función para leer el contenido de una receta
+def leer_receta():
+    ruta_categoria = elegir_categoria()
+    ruta_receta = elegir_receta(ruta_categoria)
+
+    with open(ruta_receta, 'r', encoding='utf-8') as file:
+        contenido = file.read()
+        print(contenido)
+
+# Función para crear una nueva receta
+def crear_receta():
+    ruta_categoria = elegir_categoria()
+    nombre_receta = input("Escribe el nombre de tu receta: ") + ".txt"
+    ruta_receta = ruta_categoria / nombre_receta
+
+    if ruta_receta.is_file():
+        print("La receta ya existe.")
+    else:
+        contenido_receta = input("Escribe tu nueva receta (presiona Ctrl+Z o Ctrl+D para finalizar):\n")
+        with open(ruta_receta, 'w', encoding='utf-8') as file:
+            file.write(contenido_receta)
+        print(f"Tu receta {nombre_receta} ha sido creada.")
+
+# Función para crear una nueva categoría
+def crear_categoria():
+    nombre_categoria = input("Escribe el nombre de la nueva categoría: ")
+    ruta_categoria = mi_ruta / nombre_categoria
+
+    if ruta_categoria.is_dir():
+        print("La categoría ya existe.")
+    else:
+        ruta_categoria.mkdir()
+        print(f"Tu nueva categoría {nombre_categoria} ha sido creada.")
+
+# Función para eliminar una receta
+def eliminar_receta():
+    ruta_categoria = elegir_categoria()
+    ruta_receta = elegir_receta(ruta_categoria)
+    ruta_receta.unlink()
+    print(f"La receta {ruta_receta.name} ha sido eliminada.")
+
+# Función para eliminar una categoría
+def eliminar_categoria():
+    ruta_categoria = elegir_categoria()
+    ruta_categoria.rmdir()
+    print(f"La categoría {ruta_categoria.name} ha sido eliminada.")
+
+# Función para volver al menú principal
+def volver_inicio():
+    input("Presiona Enter para volver al inicio...")
+
+if __name__ == "__main__":
+    menu_principal()
